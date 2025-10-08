@@ -6,7 +6,7 @@ export default defineConfig({
     // ===================================================================
     // ==> ADD THIS 'base' PROPERTY AND CUSTOMIZE IT FOR GITHUB PAGES  <==
     // ===================================================================
-    base: '/your-repository-name/',
+    base: '/Portfolio/',
 
     // Your existing configuration (no changes needed below)
     root: 'src/', // Sources files (typically where index.html is)
