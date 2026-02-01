@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flying Scroll Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .posters-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .posters-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .text-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .text-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            /* Will be controlled by JS */
+        }
+
+        .text-item.left {
+            text-align: right;
+            align-items: flex-end;
+        }
+
+        .text-item.right {
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        .text-title {
+            font-size: 3rem;
+            font-weight: 300;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .text-desc {
+            font-size: 1rem;
+            opacity: 0.7;
+            max-width: 250px;
+            line-height: 1.5;
+        }
+
+        .title {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            letter-spacing: 2px;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">Scroll Opening Effect</div>
+    <div id="app" class="posters-container">
+        <canvas id="canvas" class="posters-canvas"></canvas>
+        <div class="text-container" id="text-container"></div>
+    </div>
+    <div class="hint">Scroll or drag to navigate</div>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "ogl": "https://cdn.jsdelivr.net/npm/ogl@1.0.8/+esm"
+      }
+    }
+  </script>
+
+    <script type="module">
+        import { Renderer, Camera, Transform, Plane, Program, Mesh, Texture } from 'ogl';
+
+        // ============================================
+        // SHADERS
+        // ============================================
+
+        const vertexShader = `
+      precision highp float;
+
+      attribute vec3 position;
+      attribute vec2 uv;
+      attribute vec3 normal;
+
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+
+      uniform float uProgress;      // 0 = flat, 1 = fully curled
+      uniform float uDirection;     // 1 = scroll down effect, -1 = scroll up effect
+      uniform float uTime;
+      uniform float uMaxRotation;
+      uniform float uOpacity; // New uniform for fade out
+
+      varying vec2 vUv;
+      varying float vOpacity; // Pass to fragment
+
+      float PI = 3.141592653589793238;
+
+      void main() {
+        vUv = uv;
+        
+        vec3 newpos = position;
+        
+        // Plane goes from y = -0.5 to y = 0.5
+        // normalizedY: -1 at bottom, 0 at center, 1 at top
+        float normalizedY = position.y * 2.0;
+        
+        // Add subtle horizontal wave for organic flowing motion
+        float wave = sin(position.x * 5.0 + uTime * 0.6) * 0.03 * uProgress;
+        
+        // === ENTIRE CARD: Cascading wave fold ===
+        // Use absolute normalizedY to apply same effect to both halves
+        float absNormY = abs(normalizedY);
+        float sign = normalizedY >= 0.0 ? 1.0 : -1.0;  // Direction from center
+        
+        // First fold: entire card curls based on distance from center
+        float firstFoldFactor = pow(absNormY, 1.2);
+        float firstAngle = uProgress * uMaxRotation * firstFoldFactor * uDirection;
+        firstAngle += wave * firstFoldFactor;
+        
+        // Apply first fold
+        float distFromCenter = abs(position.y);
+        float cosA1 = cos(firstAngle);
+        float sinA1 = sin(firstAngle);
+        
+        // First rotation around center (mirrored for top/bottom)
+        float y1 = sign * distFromCenter * cosA1;
+        float z1 = distFromCenter * sinA1;
+        
+        // Second fold: outer portion curls again (cascading wave)
+        float secondFoldThreshold = 0.5;
+        if (absNormY > secondFoldThreshold) {
+          // How far into the second fold zone (0 to 1)
+          float secondFoldProgress = (absNormY - secondFoldThreshold) / (1.0 - secondFoldThreshold);
+          secondFoldProgress = pow(secondFoldProgress, 1.5);
+          
+          // Second curl angle (curls in same direction, creating wave)
+          float secondAngle = uProgress * (uMaxRotation * 0.7) * secondFoldProgress * uDirection;
+          secondAngle += sin(position.x * 4.0 + uTime * 0.8) * 0.05 * uProgress * secondFoldProgress;
+          
+          // Apply second rotation relative to the first fold's position
+          float cosA2 = cos(secondAngle);
+          float sinA2 = sin(secondAngle);
+          
+          // Pivot point for second fold is at the threshold
+          float pivotY = sign * secondFoldThreshold * 0.5 * cosA1;
+          float pivotZ = secondFoldThreshold * 0.5 * sinA1;
+          
+          // Distance from second pivot
+          float distFromPivot = (absNormY - secondFoldThreshold) * 0.5;
+          
+          // Second rotation (additive to first)
+          float localY = sign * distFromPivot * cosA2;
+          float localZ = distFromPivot * sinA2;
+          
+          // Combine: first fold base + second fold addition
+          y1 = pivotY + localY * cosA1 - sign * localZ * sinA1;
+          z1 = pivotZ + sign * localY * sinA1 + localZ * cosA1;
+        }
+        
+        newpos.y = y1;
+        newpos.z = z1;
+        
+        // Add subtle breathing depth for extra dimension
+        newpos.z += sin(position.x * 3.0 + position.y * 2.0 + uTime * 0.3) * 0.006 * uProgress;
+
+        vOpacity = uOpacity;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newpos, 1.0);
+      }
+    `;
+
+        const fragmentShader = `
+      precision highp float;
+
+      uniform vec2 uImageSize;
+      uniform vec2 uPlaneSize;
+      uniform sampler2D tMap;
+
+      varying vec2 vUv;
+      varying float vOpacity; // Receive from vertex
+
+      void main() {
+        vec2 imageSize = uImageSize;
+        vec2 planeSize = uPlaneSize;
+
+        float imageAspect = imageSize.x / imageSize.y;
+        float planeAspect = planeSize.x / planeSize.y;
+        vec2 scale = vec2(1.0, 1.0);
+
+        if (planeAspect > imageAspect) {
+            scale.x = imageAspect / planeAspect;
+        } else {
+            scale.y = planeAspect / imageAspect;
+        }
+
+        vec2 uv = vUv * scale + (1.0 - scale) * 0.5;
+
+        vec4 color = texture2D(tMap, uv);
+        gl_FragColor = vec4(color.rgb, color.a * vOpacity);
+      }
+    `;
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+
+        function AutoBind(self, { include, exclude } = {}) {
+            const getAllProperties = object => {
+                const properties = new Set();
+                do {
+                    for (const key of Reflect.ownKeys(object)) {
+                        properties.add([object, key]);
+                    }
+                } while ((object = Reflect.getPrototypeOf(object)) && object !== Object.prototype);
+                return properties;
+            };
+
+            const filter = key => {
+                const match = pattern => (typeof pattern === 'string' ? key === pattern : pattern.test(key));
+                if (include) return include.some(match);
+                if (exclude) return !exclude.some(match);
+                return true;
+            };
+
+            for (const [object, key] of getAllProperties(self.constructor.prototype)) {
+                if (key === 'constructor' || !filter(key)) continue;
+                const descriptor = Reflect.getOwnPropertyDescriptor(object, key);
+                if (descriptor && typeof descriptor.value === 'function') {
+                    self[key] = self[key].bind(self);
+                }
+            }
+            return self;
+        }
+
+        function lerp(p1, p2, t) {
+            return p1 + (p2 - p1) * t;
+        }
+
+        function map(num, min1, max1, min2, max2, round = false) {
+            const num1 = (num - min1) / (max1 - min1);
+            const num2 = num1 * (max2 - min2) + min2;
+            return round ? Math.round(num2) : num2;
+        }
+
+        // ============================================
+        // MEDIA CLASS - Individual Poster
+        // ============================================
+
+        class Media {
+            constructor({ gl, geometry, scene, screen, viewport, image, length, index, planeWidth, planeHeight, distortion, align, textElement }) {
+                this.extra = 0;
+                this.gl = gl;
+                this.geometry = geometry;
+                this.scene = scene;
+                this.screen = screen;
+                this.viewport = viewport;
+                this.image = image;
+                this.length = length;
+                this.index = index;
+                this.planeWidth = planeWidth;
+                this.planeHeight = planeHeight;
+                this.distortion = distortion;
+                this.align = align; // 'left' or 'right'
+                this.textElement = textElement;
+
+                this.createShader();
+                this.createMesh();
+                this.onResize();
+            }
+
+            createShader() {
+                const texture = new Texture(this.gl, {
+                    generateMipmaps: false
+                });
+
+                this.program = new Program(this.gl, {
+                    depthTest: false,
+                    depthWrite: false,
+                    fragment: fragmentShader,
+                    vertex: vertexShader,
+                    uniforms: {
+                        tMap: { value: texture },
+                        uProgress: { value: 0 },          // 0 = flat, 1 = curled
+                        uDirection: { value: 1 },         // 1 = curl backward, -1 = curl forward
+                        uPlaneSize: { value: [0, 0] },
+                        uImageSize: { value: [0, 0] },
+                        // SCROLL CURL EFFECT - only top portion curls
+                        uMaxRotation: { value: Math.PI / 2.5 },  // ~72 degrees max curl
+                        uTime: { value: 0 },
+                        uOpacity: { value: 1 }
+                    },
+                    cullFace: false
+                });
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = this.image;
+                img.onload = () => {
+                    texture.image = img;
+                    this.program.uniforms.uImageSize.value = [img.naturalWidth, img.naturalHeight];
+                };
+            }
+
+            createMesh() {
+                this.plane = new Mesh(this.gl, {
+                    geometry: this.geometry,
+                    program: this.program
+                });
+                this.plane.setParent(this.scene);
+            }
+
+            setScale() {
+                this.plane.scale.x = (this.viewport.width * this.planeWidth) / this.screen.width;
+                this.plane.scale.y = (this.viewport.height * this.planeHeight) / this.screen.height;
+
+                // Alternating layout
+                const xOffset = this.viewport.width * 0.25; // Quarter width offset
+                this.plane.position.x = this.align === 'left' ? -xOffset : xOffset;
+
+                this.plane.program.uniforms.uPlaneSize.value = [this.plane.scale.x, this.plane.scale.y];
+            }
+
+            onResize({ screen, viewport } = {}) {
+                if (screen) this.screen = screen;
+                if (viewport) {
+                    this.viewport = viewport;
+                }
+                this.setScale();
+
+                this.padding = 5;
+                this.height = this.plane.scale.y + this.padding;
+                this.heightTotal = this.height * this.length;
+
+                this.y = -this.heightTotal / 2 + (this.index + 0.5) * this.height;
+            }
+
+            update(scroll) {
+                this.plane.position.y = this.y - scroll.current - this.extra;
+
+                const viewportHeight = this.viewport.height;
+                const planeY = this.plane.position.y;
+
+                // Calculate curl progress based on distance from center
+                // Start curling immediately when moving away from center
+                // Progress: 0 at center, 1 at 60% away from center (so we see the full effect)
+                const distanceFromCenter = Math.abs(planeY) / (viewportHeight * 0.3);
+                const progress = Math.min(distanceFromCenter, 1);
+
+                // Direction: curl backward when going down, forward when going up
+                const direction = planeY < 0 ? 1 : -1;
+
+                this.program.uniforms.uProgress.value = progress;
+                this.program.uniforms.uDirection.value = direction;
+                this.program.uniforms.uTime.value += 0.02;
+
+                // Smooth exit: fade out when near the edges (top/bottom)
+                // Viewport height is this.viewport.height
+                // Range from -viewportHeight/2 to +viewportHeight/2
+                const limit = viewportHeight * 0.6;
+                const distY = Math.abs(planeY);
+
+                let opacity = 1;
+                if (distY > limit * 0.7) {
+                    opacity = 1 - (distY - limit * 0.7) / (limit * 0.3);
+                    opacity = Math.max(0, opacity);
+                }
+                this.program.uniforms.uOpacity.value = opacity;
+
+
+                const planeHeight = this.plane.scale.y;
+                const topEdge = this.plane.position.y + planeHeight / 2;
+                const bottomEdge = this.plane.position.y - planeHeight / 2;
+
+                if (topEdge < -viewportHeight / 2 - planeHeight) { // Added margin
+                    this.extra -= this.heightTotal;
+                } else if (bottomEdge > viewportHeight / 2 + planeHeight) {
+                    this.extra += this.heightTotal;
+                }
+
+                // Update Text position
+                if (this.textElement) {
+                    // Convert WebGL Y to screen Y
+                    // (0,0) is center. +Y is up. Screen: (0,0) is top-left. +Y is down.
+                    const screenY = this.screen.height / 2 - (this.plane.position.y / this.viewport.height) * this.screen.height;
+
+                    // Fixed horizontal position based on alignment
+                    // If image is Left, text is Right. If image is Right, text is Left.
+                    // But we used CSS to position them with left: 50% / top: 50%.
+                    // We need to offset them.
+
+                    const screenX = this.screen.width / 2 + (this.align === 'left' ? this.screen.width * 0.25 : -this.screen.width * 0.25);
+
+                    this.textElement.style.transform = `translate(-50%, -50%) translate(${screenX - this.screen.width / 2}px, ${screenY - this.screen.height / 2}px)`;
+                    this.textElement.style.opacity = opacity;
+                }
+            }
+        }
+
+        // ============================================
+        // CANVAS CLASS - Main WebGL Controller
+        // ============================================
+
+        class Canvas {
+            constructor({ container, canvas, items, textItems, planeWidth, planeHeight, distortion, scrollEase, cameraFov, cameraZ }) {
+                this.container = container;
+                this.canvas = canvas;
+                this.items = items;
+                this.textItems = textItems;
+                this.planeWidth = planeWidth;
+                this.planeHeight = planeHeight;
+                this.planeHeight = planeHeight;
+                this.distortion = distortion;
+                this.scroll = {
+                    ease: scrollEase,
+                    current: 0,
+                    target: 0,
+                    last: 0
+                };
+                this.cameraFov = cameraFov;
+                this.cameraZ = cameraZ;
+
+                AutoBind(this);
+
+                this.createRenderer();
+                this.createCamera();
+                this.createScene();
+                this.onResize();
+
+                this.createGeometry();
+                this.createMedias();
+                this.update();
+                this.addEventListeners();
+            }
+
+            createRenderer() {
+                this.renderer = new Renderer({
+                    canvas: this.canvas,
+                    alpha: true,
+                    antialias: true,
+                    dpr: Math.min(window.devicePixelRatio, 2)
+                });
+                this.gl = this.renderer.gl;
+            }
+
+            createCamera() {
+                this.camera = new Camera(this.gl);
+                this.camera.fov = this.cameraFov;
+                this.camera.position.z = this.cameraZ;
+            }
+
+            createScene() {
+                this.scene = new Transform();
+            }
+
+            createGeometry() {
+                this.planeGeometry = new Plane(this.gl, {
+                    heightSegments: 50,  // More segments for smoother curl
+                    widthSegments: 100
+                });
+            }
+
+            createMedias() {
+                const textContainer = document.getElementById('text-container');
+
+                this.medias = this.items.map((image, index) => {
+                    const align = index % 2 === 0 ? 'left' : 'right';
+
+                    // Create Text Element
+                    const textDiv = document.createElement('div');
+                    textDiv.classList.add('text-item');
+                    textDiv.classList.add(align === 'left' ? 'right' : 'left'); // Text is opposite to image
+
+                    const titleDiv = document.createElement('div');
+                    titleDiv.classList.add('text-title');
+                    titleDiv.innerText = this.textItems[index % this.textItems.length].title;
+
+                    const descDiv = document.createElement('div');
+                    descDiv.classList.add('text-desc');
+                    descDiv.innerText = this.textItems[index % this.textItems.length].desc;
+
+                    textDiv.appendChild(titleDiv);
+                    textDiv.appendChild(descDiv);
+                    textContainer.appendChild(textDiv);
+
+                    return new Media({
+                        gl: this.gl,
+                        geometry: this.planeGeometry,
+                        scene: this.scene,
+                        screen: this.screen,
+                        viewport: this.viewport,
+                        image,
+                        length: this.items.length,
+                        index,
+                        planeWidth: this.planeWidth,
+                        planeHeight: this.planeHeight,
+                        distortion: this.distortion,
+                        align: align,
+                        textElement: textDiv
+                    });
+                });
+            }
+
+            onResize() {
+                const rect = this.container.getBoundingClientRect();
+                this.screen = {
+                    width: rect.width,
+                    height: rect.height
+                };
+
+                this.renderer.setSize(this.screen.width, this.screen.height);
+
+                this.camera.perspective({
+                    aspect: this.gl.canvas.width / this.gl.canvas.height
+                });
+
+                const fov = (this.camera.fov * Math.PI) / 180;
+                const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
+                const width = height * this.camera.aspect;
+
+                this.viewport = { height, width };
+
+                if (this.medias) {
+                    this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport }));
+                }
+            }
+
+            onTouchDown(e) {
+                this.isDown = true;
+                this.scroll.position = this.scroll.current;
+                this.start = e.touches ? e.touches[0].clientY : e.clientY;
+            }
+
+            onTouchMove(e) {
+                if (!this.isDown) return;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                const distance = (this.start - y) * 0.1;
+                this.scroll.target = this.scroll.position + distance;
+            }
+
+            onTouchUp() {
+                this.isDown = false;
+            }
+
+            onWheel(e) {
+                e.preventDefault();
+                const speed = e.deltaY;
+                this.scroll.target += speed * 0.005;
+            }
+
+            update() {
+                this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
+
+                if (this.medias) {
+                    this.medias.forEach(media => media.update(this.scroll));
+                }
+                this.renderer.render({ scene: this.scene, camera: this.camera });
+                this.scroll.last = this.scroll.current;
+                this.animationId = requestAnimationFrame(this.update);
+            }
+
+            addEventListeners() {
+                window.addEventListener('resize', this.onResize);
+
+                this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
+                window.addEventListener('mousedown', this.onTouchDown);
+                window.addEventListener('mousemove', this.onTouchMove);
+                window.addEventListener('mouseup', this.onTouchUp);
+
+                window.addEventListener('touchstart', this.onTouchDown);
+                window.addEventListener('touchmove', this.onTouchMove, { passive: false });
+                window.addEventListener('touchend', this.onTouchUp);
+            }
+
+            destroy() {
+                cancelAnimationFrame(this.animationId);
+
+                window.removeEventListener('resize', this.onResize);
+                this.canvas.removeEventListener('wheel', this.onWheel);
+
+                window.removeEventListener('mousedown', this.onTouchDown);
+                window.removeEventListener('mousemove', this.onTouchMove);
+                window.removeEventListener('mouseup', this.onTouchUp);
+
+                window.removeEventListener('touchstart', this.onTouchDown);
+                window.removeEventListener('touchmove', this.onTouchMove);
+                window.removeEventListener('touchend', this.onTouchUp);
+            }
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        // Sample images - Replace with your own!
+        const images = [
+            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
+            'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800',
+            'https://images.unsplash.com/photo-1505144808419-1957a94ca61e?w=800',
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800',
+            'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800',
+            'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800',
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800'
+        ];
+
+        const container = document.getElementById('app');
+        const canvas = document.getElementById('canvas');
+
+        // Sample Text
+        const textData = [
+            { title: "Misty Peaks", desc: "A journey through the cloud-covered mountains of the north." },
+            { title: "Golden Hour", desc: "When the sun hits the horizon just right." },
+            { title: "Urban Dreams", desc: "The city lights flickering in the distance." },
+            { title: "Silent Waters", desc: "Reflections of a calm and peaceful morning." },
+            { title: "Forest Path", desc: "Walking through the ancient woods." },
+            { title: "Ocean Breeze", desc: "The smell of salt and the sound of waves." },
+            { title: "Desert Dust", desc: "Endless sands under the scorching sun." },
+            { title: "Night Sky", desc: "Stars twinkling in the deep blue void." }
+        ];
+
+        new Canvas({
+            container,
+            canvas,
+            items: images,
+            textItems: textData,
+            planeWidth: 450,       // Wider for scroll effect
+            planeHeight: 300,      // Shorter height for aspect ratio
+            distortion: 2.5,       // Softer distortion for fluid motion
+            scrollEase: 0.05,      // Faster ease for responsive feel
+            cameraFov: 45,
+            cameraZ: 20
+        });
+    </script>
+</body>
+
+</html>

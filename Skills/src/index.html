@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills - Captain's Portfolio</title>
+    <link rel="stylesheet" href="./navigation.css">
+</head>
+<body>
+    <!-- Nautical Ship's Wheel Navigation -->
+    <nav class="nautical-nav">
+        <!-- Desktop: Ship's Wheel -->
+        <div class="ship-wheel">
+            <!-- Center Compass -->
+            <div class="compass-center">
+                <div class="compass-needle"></div>
+            </div>
+            
+            <!-- Navigation Spokes (5 directional buttons) -->
+            <div class="nav-spoke" data-position="top">
+                <a href="http://localhost:5173" title="Home">
+                    <span class="nav-icon">⚓</span>
+                </a>
+            </div>
+            <div class="nav-spoke" data-position="right-top">
+                <a href="http://localhost:5174" title="About Me">
+                    <span class="nav-icon">🧭</span>
+                </a>
+            </div>
+            <div class="nav-spoke" data-position="right-bottom">
+                <a href="http://localhost:5175" title="Projects">
+                    <span class="nav-icon">⛵</span>
+                </a>
+            </div>
+            <div class="nav-spoke" data-position="bottom">
+                <a href="http://localhost:5176" title="Socials">
+                    <span class="nav-icon">🌊</span>
+                </a>
+            </div>
+            <div class="nav-spoke" data-position="left">
+                <a href="http://localhost:5177" class="active" title="Skills">
+                    <span class="nav-icon">⚙️</span>
+                </a>
+            </div>
+            
+            <!-- Animated Wave Rings -->
+            <div class="wave-ring"></div>
+            <div class="wave-ring"></div>
+            <div class="wave-ring"></div>
+        </div>
+
+        <!-- Mobile: Toggle Button & Menu -->
+        <div class="mobile-toggle">
+            <span class="toggle-icon">⚓</span>
+        </div>
+        <div class="mobile-menu">
+            <a href="http://localhost:5173">
+                <span class="nav-icon">⚓</span>
+                <span>Home</span>
+            </a>
+            <a href="http://localhost:5174">
+                <span class="nav-icon">🧭</span>
+                <span>About Me</span>
+            </a>
+            <a href="http://localhost:5175">
+                <span class="nav-icon">⛵</span>
+                <span>Projects</span>
+            </a>
+            <a href="http://localhost:5176">
+                <span class="nav-icon">🌊</span>
+                <span>Socials</span>
+            </a>
+            <a href="http://localhost:5177" class="active">
+                <span class="nav-icon">⚙️</span>
+                <span>Skills</span>
+            </a>
+        </div>
+    </nav>
+
+    <div id="root"></div>
+    <script type="module" src="./index.jsx"></script>
+    <script type="module" src="./navigation.js"></script>
+</body>
+</html>

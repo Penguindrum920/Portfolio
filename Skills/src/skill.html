@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Name - Skills Showcase</title>
+    <meta name="description" content="Computer Science Student & Developer specializing in machine learning, web development, and data structures.">
+    <link href="https://fonts.googleapis.com/css?family=Lato|Oswald:400,700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset Styles */
+        a, abbr, acronym, address, applet, article, aside, audio, b, big, blockquote, body, canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, html, i, iframe, img, ins, kbd, label, legend, li, mark, menu, nav, object, ol, output, p, pre, q, ruby, s, samp, section, small, span, strike, strong, sub, summary, sup, table, tbody, td, tfoot, th, thead, time, tr, tt, u, ul, var, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+
+        body {
+            line-height: 1;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        *, :after, :before {
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        button, input, select, textarea {
+            color: inherit;
+            font-size: inherit;
+            font-style: inherit;
+            font-family: inherit;
+            border: none;
+            outline: none;
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        a {
+            color: inherit;
+            outline: none;
+            text-decoration: none;
+        }
+
+        /* Base Styles */
+        body {
+            background: #0052a3;
+            -webkit-font-smoothing: antialiased;
+            color: #fff;
+            font-weight: 400;
+            font-size: 16px;
+            font-family: Lato, sans-serif;
+        }
+
+        @media screen and (max-width: 1023px) {
+            body {
+                font-size: 15px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            body {
+                font-size: 14px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            body {
+                font-size: 13px;
+            }
+        }
+
+        p {
+            line-height: 1.25em;
+        }
+
+        /* Background Gradients */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .background.background-0 {
+            background: linear-gradient(to left top, #4da6ff, rgba(77, 166, 255, 0) 70%);
+        }
+
+        .background.background-1 {
+            background: linear-gradient(to right top, #3d9aff, rgba(61, 154, 255, 0) 70%);
+        }
+
+        /* Button Component */
+        .button {
+            display: inline-block;
+            position: relative;
+            text-decoration: none;
+            font-family: Oswald, sans-serif;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 20px 28px;
+            font-size: 18px;
+            overflow: hidden;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .button {
+                padding: 18px 25px;
+                font-size: 17px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .button {
+                padding: 16px 22px;
+                font-size: 16px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .button {
+                padding: 14px 18px;
+                font-size: 15px;
+            }
+        }
+
+        .button:hover .label-hover,
+        .button:hover .label-hover .inner {
+            transform: translateX(0);
+        }
+
+        .button .border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 4px solid #fff;
+        }
+
+        @media screen and (max-width: 700px) {
+            .button .border {
+                border-width: 3px;
+            }
+        }
+
+        .button .label-hover {
+            overflow: hidden;
+            background: #fff;
+            transform: translateX(-100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.45s cubic-bezier(0.4, 0, 0.25, 1);
+            will-change: transform;
+        }
+
+        .button .label-hover .inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.45s cubic-bezier(0.4, 0, 0.25, 1);
+            will-change: transform;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            transform: translateX(100%);
+        }
+
+        /* Content Layout */
+        .content {
+            position: relative;
+            width: 600px;
+            margin: 0 auto;
+            padding-top: 60px;
+            padding-bottom: 60px;
+            zoom: 1.5;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .content {
+                width: auto;
+                margin-left: 50px;
+                margin-right: 180px;
+                padding-top: 50px;
+                padding-bottom: 50px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .content {
+                margin-left: 30px;
+                margin-right: 160px;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .content {
+                margin-left: 20px;
+                margin-right: 20px;
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+        }
+
+        .content .section {
+            margin-bottom: 80px;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .content .section {
+                margin-bottom: 50px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section {
+                margin-bottom: 40px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .content .section {
+                margin-bottom: 30px;
+            }
+        }
+
+        .content .section .title {
+            font-family: Oswald, sans-serif;
+            font-size: 40px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.75em;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .content .section .title {
+                font-size: 35px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section .title {
+                font-size: 30px;
+            }
+        }
+
+        /* Introduction Section */
+        .content .section.introduction .title {
+            margin-bottom: 0.05em;
+            font-family: Oswald, sans-serif;
+            font-size: 90px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .content .section.introduction .title {
+                font-size: 70px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section.introduction .title {
+                font-size: 60px;
+                margin-bottom: 0.1em;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .content .section.introduction .title {
+                padding-right: 120px;
+                font-size: 40px;
+            }
+        }
+
+        .content .section.introduction .sub-title {
+            font-family: Oswald, sans-serif;
+            font-size: 30px;
+            margin-bottom: 1em;
+            text-transform: uppercase;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .content .section.introduction .sub-title {
+                font-size: 25px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section.introduction .sub-title {
+                font-size: 20px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .content .section.introduction .sub-title {
+                font-size: 18px;
+            }
+        }
+
+        .content .section.introduction .description {
+            width: 70%;
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section.introduction .description {
+                width: auto;
+            }
+        }
+
+        /* Skills Section */
+        .content .section.skills .list {
+            margin-bottom: 30px;
+        }
+
+        .content .section.skills .list .category-name {
+            margin-bottom: 12px;
+            font-size: 24px;
+            font-family: Oswald, sans-serif;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+
+        @media screen and (max-width: 1023px) {
+            .content .section.skills .list .category-name {
+                font-size: 35px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section.skills .list .category-name {
+                font-size: 20px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .content .section.skills .list .category-name {
+                font-size: 18px;
+            }
+        }
+
+        .content .section.skills .list .button {
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+
+        @media screen and (max-width: 700px) {
+            .content .section.skills .list .button {
+                margin-right: 8px;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .content .section.skills .list .button {
+                margin-right: 6px;
+                margin-bottom: 8px;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+    <span class="background background-0"></span>
+    <span class="background background-1"></span>
+    
+    <main class="content">
+        <!-- Introduction Section -->
+        <section class="section introduction">
+            <!--<h1 class="title">Aditya Kaushik</h1> -->
+            <!--<h1 class="sub-title">Computer Science Student &amp; Developer</h1>
+            <p class="description">Specialized in machine learning, web development, and data structures. Proficient across multiple programming languages and modern development frameworks.</p>
+        </section> -->
+
+        <!-- Skills Section -->
+        <section class="section skills">
+            <!-- <h1 class="title">Skills</h1> -->
+            
+            <!-- Programming Languages -->
+            <div class="list">
+                <div class="category-name">Programming Languages</div>
+                <div>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Python</span>
+                        <span class="label-hover">
+                            <span class="inner">Python</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Java</span>
+                        <span class="label-hover">
+                            <span class="inner">Java</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">C</span>
+                        <span class="label-hover">
+                            <span class="inner">C</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">C++</span>
+                        <span class="label-hover">
+                            <span class="inner">C++</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">JavaScript</span>
+                        <span class="label-hover">
+                            <span class="inner">JavaScript</span>
+                        </span>
+                    </a>
+                    <!--<a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">HTML/CSS</span>
+                        <span class="label-hover">
+                            <span class="inner">HTML/CSS</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Go</span>
+                        <span class="label-hover">
+                            <span class="inner">Go</span>
+                        </span>
+                    </a> 
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Rust</span>
+                        <span class="label-hover">
+                            <span class="inner">Rust</span>
+                        </span>
+                    </a>-->
+                </div>
+            </div>
+
+            <!-- Machine Learning & AI -->
+            <div class="list">
+                <div class="category-name">Machine Learning &amp; AI</div>
+                <div>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">TensorFlow</span>
+                        <span class="label-hover">
+                            <span class="inner">TensorFlow</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">PyTorch</span>
+                        <span class="label-hover">
+                            <span class="inner">PyTorch</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Scikit-learn</span>
+                        <span class="label-hover">
+                            <span class="inner">Scikit-learn</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">LLMs</span>
+                        <span class="label-hover">
+                            <span class="inner">LLMs</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">NLP</span>
+                        <span class="label-hover">
+                            <span class="inner">NLP</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Computer Vision</span>
+                        <span class="label-hover">
+                            <span class="inner">Computer Vision</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">RAG</span>
+                        <span class="label-hover">
+                            <span class="inner">RAG</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Web Development -->
+            <div class="list">
+                <div class="category-name">Web Development</div>
+                <div>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">HTML/CSS</span>
+                        <span class="label-hover">
+                            <span class="inner">HTML/CSS</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">React</span>
+                        <span class="label-hover">
+                            <span class="inner">React</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Three.js</span>
+                        <span class="label-hover">
+                            <span class="inner">Three.js</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Node.js</span>
+                        <span class="label-hover">
+                            <span class="inner">Node.js</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Express</span>
+                        <span class="label-hover">
+                            <span class="inner">Express</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">MongoDB</span>
+                        <span class="label-hover">
+                            <span class="inner">MongoDB</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">PostgreSQL</span>
+                        <span class="label-hover">
+                            <span class="inner">PostgreSQL</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">REST APIs</span>
+                        <span class="label-hover">
+                            <span class="inner">REST APIs</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Data & Databases -->
+            <div class="list">
+                <div class="category-name">Data &amp; Databases</div>
+                <div>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">SQL</span>
+                        <span class="label-hover">
+                            <span class="inner">SQL</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">MongoDB</span>
+                        <span class="label-hover">
+                            <span class="inner">MongoDB</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">PostgreSQL</span>
+                        <span class="label-hover">
+                            <span class="inner">PostgreSQL</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Firebase</span>
+                        <span class="label-hover">
+                            <span class="inner">Firebase</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Pandas</span>
+                        <span class="label-hover">
+                            <span class="inner">Pandas</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">NumPy</span>
+                        <span class="label-hover">
+                            <span class="inner">NumPy</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Jupyter</span>
+                        <span class="label-hover">
+                            <span class="inner">Jupyter</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tools & Technologies -->
+            <div class="list">
+                <div class="category-name">Tools &amp; Technologies</div>
+                <div>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Git</span>
+                        <span class="label-hover">
+                            <span class="inner">Git</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">GitHub</span>
+                        <span class="label-hover">
+                            <span class="inner">GitHub</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Docker</span>
+                        <span class="label-hover">
+                            <span class="inner">Docker</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Kubernetes</span>
+                        <span class="label-hover">
+                            <span class="inner">Kubernetes</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">VS Code</span>
+                        <span class="label-hover">
+                            <span class="inner">VS Code</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Blender</span>
+                        <span class="label-hover">
+                            <span class="inner">Blender</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Vercel</span>
+                        <span class="label-hover">
+                            <span class="inner">Vercel</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">AWS</span>
+                        <span class="label-hover">
+                            <span class="inner">AWS</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Specializations 
+            <div class="list">
+                <div class="category-name">Specializations</div>
+                <div>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Data Structures &amp; Algorithms</span>
+                        <span class="label-hover">
+                            <span class="inner">Data Structures &amp; Algorithms</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Full Stack Development</span>
+                        <span class="label-hover">
+                            <span class="inner">Full Stack Development</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Mobile Apps</span>
+                        <span class="label-hover">
+                            <span class="inner">Mobile Apps</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Game Development</span>
+                        <span class="label-hover">
+                            <span class="inner">Game Development</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Cloud Computing</span>
+                        <span class="label-hover">
+                            <span class="inner">Cloud Computing</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">3D Graphics</span>
+                        <span class="label-hover">
+                            <span class="inner">3D Graphics</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Healthcare AI</span>
+                        <span class="label-hover">
+                            <span class="inner">Healthcare AI</span>
+                        </span>
+                    </a>
+                    <a class="button" href="#" onclick="return false;">
+                        <span class="border"></span>
+                        <span class="label">Teaching &amp; Mentoring</span>
+                        <span class="label-hover">
+                            <span class="inner">Teaching &amp; Mentoring</span>
+                        </span>
+                    </a>
+                </div>
+            </div>-->
+        </section>
+
+
+    </main>
+
+
+
+    <script>
+        console.log('Skills showcase loaded');
+    </script>
+</body>
+</html>
